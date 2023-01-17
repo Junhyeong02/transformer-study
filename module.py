@@ -21,12 +21,27 @@ class PositionalEncoding(nn.Module):
         
         return self.encoding[:seq_len, :]
 
+class PositionWiseFeedForward(nn.Module):
+    def __init__(self, embed_dim, hidden_dim):
+        super(PositionWiseFeedForward, self).__init__()
+
+        self.layer1 = nn.Linear(embed_dim, hidden_dim)
+        self.layer2 = nn.Linear(hidden_dim, embed_dim)
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        x = self.layer1(x)
+        x = self.relu(x)
+        x = self.layer2(x)
+
+        return x
+
 
 class EncoderLayer(nn.Module):
     def __init__(self, embed_dim, num_heads, d_model, dim_ffn):
         super(EncoderLayer, self).__init__()
         self.MHA = MultiHeadAttention(embed_dim, num_heads, d_model)
-        self.FFN = nn.Sequential(nn.Linear(embed_dim, dim_ffn), nn.ReLU(), nn.Linear(dim_ffn, embed_dim))
+        self.FFN = PositionWiseFeedForward(embed_dim, dim_ffn)
         self.layernorm = nn.LayerNorm(embed_dim)
 
     def forward(self, x):
