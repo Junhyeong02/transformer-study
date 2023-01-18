@@ -36,20 +36,44 @@ class PositionWiseFeedForward(nn.Module):
 
         return x
 
-
 class EncoderLayer(nn.Module):
     def __init__(self, embed_dim, num_heads, d_model, dim_ffn):
         super(EncoderLayer, self).__init__()
         self.MHA = MultiHeadAttention(embed_dim, num_heads, d_model)
         self.FFN = PositionWiseFeedForward(embed_dim, dim_ffn)
-        self.layernorm = nn.LayerNorm(embed_dim)
+        self.layernorm1 = nn.LayerNorm(embed_dim)
+        self.layernorm2 = nn.LayerNorm(embed_dim)
 
-    def forward(self, x):
-        x = x + self.MHA(x, x, x)
+    def forward(self, src):
+        x = x + self.MHA(src, src, src)
         x = self.layernorm(x)
 
         x = x + self.FFN(x)
         x = self.layernorm(x)
+
+        return x
+
+class DecoderLayer(nn.Module):
+    def __init__(self, embed_dim, num_heads, d_model, dim_ffn, tgt_mask):
+        super(DecoderLayer, self).__init__()
+        self.maskedMHA = MultiHeadAttention(embed_dim, num_heads, d_model)
+        self.MHA = MultiHeadAttention(embed_dim, num_heads, d_model)
+        self.FFN = PositionWiseFeedForward(embed_dim, dim_ffn)
+        self.layernorm1 = nn.LayerNorm(embed_dim)
+        self.layernorm2 = nn.LayerNorm(embed_dim)
+        self.layernorm3 = nn.LayerNorm(embed_dim)
+
+        self.mask = tgt_mask
+
+    def forward(self, tgt, k, v):
+        q = tgt + self.maskedMHA(tgt, tgt, tgt)
+        q = self.layernorm1(q)
+        
+        x = q + self.MHA(q, k, v)
+        x = self.layernorm2(x)
+
+        x = x + self.FFN(x)
+        x = self.layernorm3(x)
 
         return x
 
