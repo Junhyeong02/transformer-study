@@ -60,4 +60,4 @@ if __name__ == "__main__":
     tensor = torch.rand(batch_size, input_len, embed_dim)
 
     output = net(tensor, tensor, tensor)
-    print(output.shape)
+    print(output)

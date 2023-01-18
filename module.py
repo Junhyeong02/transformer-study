@@ -62,11 +62,10 @@ class DecoderLayer(nn.Module):
         self.layernorm1 = nn.LayerNorm(embed_dim)
         self.layernorm2 = nn.LayerNorm(embed_dim)
         self.layernorm3 = nn.LayerNorm(embed_dim)
-
         self.mask = tgt_mask
 
     def forward(self, tgt, k, v):
-        q = tgt + self.maskedMHA(tgt, tgt, tgt)
+        q = tgt + self.maskedMHA(tgt, tgt, tgt, self.mask)
         q = self.layernorm1(q)
         
         x = q + self.MHA(q, k, v)
