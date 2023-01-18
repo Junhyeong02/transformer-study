@@ -19,7 +19,7 @@ class MultiHeadAttention(nn.Module):
         
         self.softmax = nn.Softmax(dim = -1)
 
-    def forward(self, q, k, v):
+    def forward(self, q, k, v, mask = None):
         # q, k, v : (batch, len, embed_dim)
 
         batch_size = q.shape[0]
@@ -37,7 +37,12 @@ class MultiHeadAttention(nn.Module):
 
         qk_matmal = torch.matmul(query_split, torch.transpose(key_split, 2, 3))
 
-        scaled_dot = self.softmax(qk_matmal/self.d_model**0.5)
+        logit = qk_matmal/self.d_model**0.5
+
+        if mask is not None:
+            logit += (1-mask) * -1e9
+
+        scaled_dot = self.softmax(logit)
         att_concat = torch.matmul(scaled_dot, value_split).permute((0, 2, 1, 3)).reshape(batch_size, input_len, -1)
 
         return self.wo(att_concat)
