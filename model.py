@@ -10,8 +10,9 @@ class SimpleClassifier(nn.Module):
         self.embed_dim = embed_dim
         
         self.encoder = TransformerEncoder(num_encoder_layer, max_len, embed_dim, num_heads, d_model, dim_ffn)
-        self.linear1 = nn.Linear(max_len * embed_dim, 64)
-        self.linear2 = nn.Linear(64, output_dim)
+        self.linear1 = nn.Linear(max_len * embed_dim, 256)
+        self.linear2 = nn.Linear(256, 128)
+        self.linear3 = nn.Linear(128, output_dim)
         self.relu = nn.ReLU()
 
     def forward(self, x):
@@ -22,6 +23,8 @@ class SimpleClassifier(nn.Module):
         x = self.linear1(x)
         x = self.relu(x)
         x = self.linear2(x)
+        x = self.relu(x)
+        x = self.linear3(x)
 
         return x
 
