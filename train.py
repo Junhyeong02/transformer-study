@@ -4,6 +4,9 @@ from torch.optim import Adam
 from torch.optim.lr_scheduler import OneCycleLR
 from torch.utils.data import DataLoader
 
+import random
+import torch.backends.cudnn as cudnn
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -28,7 +31,8 @@ def train(model, epochs, train_dataloader, val_dataloader, optimizer, scheduler,
     lr_record = []
     
     for epoch in range(1, epochs+1):
-
+        model.train()
+        
         train_loss = 0.0
         # train_acc = 0.0
         val_loss = 0.0
@@ -48,9 +52,9 @@ def train(model, epochs, train_dataloader, val_dataloader, optimizer, scheduler,
             train_loss += loss.item()/len(train_dataloader)
             scheduler.step()
 
-        with torch.no_grad():
-            model.eval()
-            
+        model.eval()
+
+        with torch.no_grad():    
             for batch in val_dataloader:
                 src, y = batch
                 src, y = src.to(device), y.to(device)
@@ -70,6 +74,14 @@ def train(model, epochs, train_dataloader, val_dataloader, optimizer, scheduler,
 
 if __name__ == "__main__":
 
+    torch.manual_seed(0)
+    torch.cuda.manual_seed(0)
+    torch.cuda.manual_seed_all(0)
+    np.random.seed(0)
+    cudnn.benchmark = False
+    cudnn.deterministic = True
+    random.seed(0)
+
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     print(device)
@@ -78,14 +90,12 @@ if __name__ == "__main__":
     train_output_df = pd.read_csv("./data/train_processed_output.csv")
 
     culturedataset = CultureDataset(train_input_df, train_output_df)
-
-    print(culturedataset[0][0].shape)
     train_dataset, val_dataset = get_dataset(culturedataset, 0.8)
 
     print(len(train_dataset), len(val_dataset))
 
     # model
-    num_encoder_layer = 9
+    num_encoder_layer = 12
     max_len = culturedataset[0][0].shape[0]
     embed_dim = culturedataset[0][0].shape[1]
     num_heads = 9
@@ -98,10 +108,12 @@ if __name__ == "__main__":
     model = SimpleClassifier(num_encoder_layer, max_len, embed_dim, num_heads, d_model, dim_ffn, output_dim)
     model.to(device)
     
+    print(model)
+
     # train
-    epochs = 200
+    epochs = 1000
     batch_size = 16
-    learning_rate = 1e-2
+    learning_rate = 5*1e-4
     criterion = custom_loss
 
     train_dataloader = DataLoader(train_dataset, batch_size = batch_size, shuffle = True)
