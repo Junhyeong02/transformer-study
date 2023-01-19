@@ -14,6 +14,7 @@ class SimpleClassifier(nn.Module):
         self.linear2 = nn.Linear(256, 128)
         self.linear3 = nn.Linear(128, output_dim)
         self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(0.2)
 
     def forward(self, x):
         x = self.encoder(x)
@@ -22,8 +23,10 @@ class SimpleClassifier(nn.Module):
 
         x = self.linear1(x)
         x = self.relu(x)
+        x = self.dropout(x)
         x = self.linear2(x)
         x = self.relu(x)
+        x = self.dropout(x)
         x = self.linear3(x)
 
         return x
