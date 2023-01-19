@@ -8,16 +8,18 @@ class PositionalEncoding(nn.Module):
     def __init__(self, embed_dim, max_len):
         super(PositionalEncoding, self).__init__()
 
-        self.encoding = torch.zeros(max_len, embed_dim, requires_grad = False)
-        
-        pos = torch.arange(0, max_len).unsqueeze(dim=1)
-        _2i = torch.arange(0, embed_dim, step=2).float()
+        self.embed_dim = embed_dim
+        self.max_len = max_len
 
-        self.encoding[:, ::2] = torch.sin(pos / (10000 ** (_2i / embed_dim)))
-        self.encoding[:, 1::2] = torch.cos(pos / (10000 ** (_2i / embed_dim)))
+        self.pos = torch.arange(0, self.max_len).unsqueeze(dim=1)
+        self._2i = torch.arange(0, self.embed_dim, step=2).float()        
         
     def forward(self, x):
         _, seq_len, _ = x.size() 
+        self.encoding = torch.zeros_like(x[0], requires_grad = False)
+    
+        self.encoding[:, ::2] = torch.sin(self.pos / (10000 ** (self._2i / self.embed_dim)))
+        self.encoding[:, 1::2] = torch.cos(self.pos / (10000 ** (self._2i / self.embed_dim)))
         
         return self.encoding[:seq_len, :]
 
@@ -43,9 +45,10 @@ class EncoderLayer(nn.Module):
         self.FFN = PositionWiseFeedForward(embed_dim, dim_ffn)
         self.layernorm1 = nn.LayerNorm(embed_dim)
         self.layernorm2 = nn.LayerNorm(embed_dim)
+        self.dropout = nn.Dropout(0.1)
 
     def forward(self, src):
-        x = src + self.MHA(src, src, src)
+        x = src + self.dropout(self.MHA(src, src, src))
         x = self.layernorm1(x)
 
         x = x + self.FFN(x)
@@ -62,13 +65,14 @@ class DecoderLayer(nn.Module):
         self.layernorm1 = nn.LayerNorm(embed_dim)
         self.layernorm2 = nn.LayerNorm(embed_dim)
         self.layernorm3 = nn.LayerNorm(embed_dim)
+        self.dropout = nn.Dropout(0.1)
         self.mask = tgt_mask
 
     def forward(self, tgt, k, v):
-        q = tgt + self.maskedMHA(tgt, tgt, tgt, self.mask)
+        q = tgt + self.dropout(self.maskedMHA(tgt, tgt, tgt, self.mask))
         q = self.layernorm1(q)
         
-        x = q + self.MHA(q, k, v)
+        x = q + self.dropout(self.MHA(q, k, v))
         x = self.layernorm2(x)
 
         x = x + self.FFN(x)
