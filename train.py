@@ -4,6 +4,8 @@ import torch.nn as nn
 from torch.utils.data import dataloader, Dataset
 from torch.optim import Adam
 
+import matplotlib.pyplot as plt
+
 from model import SimpleClassifier
 from utils import get_dataset
 
@@ -50,11 +52,23 @@ def train(model, epochs, train_dataloader, val_dataloader, optimizer, criterion)
 
 
 if __name__ == "__main__":
-    model = SimpleClassifier()
+
+    # model
+    num_encoder_layer = 6
+    max_len = 20
+    embed_dim = 128
+    num_heads = 8
+    d_model = 128
+    dim_ffn = 2048
+    output_dim = 10
+
+    model = SimpleClassifier(num_encoder_layer, max_len, embed_dim, num_heads, d_model, dim_ffn, output_dim)
+    
+    # train
     epochs = 50
     batch_size = 16
 
     optimizer = Adam(model.parameters(), lr = 1e-3)
     criterion = nn.CrossEntropyLoss()
     
-    train(model, epochs)
+    train_history, val_history = train(model, epochs)

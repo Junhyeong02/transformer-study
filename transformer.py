@@ -24,9 +24,12 @@ class TransformerDecoder(nn.Module):
         self.module_list = nn.ModuleList(DecoderLayer(embed_dim, num_heads, d_model, dim_ffn, tgt_mask) for _ in num_decoder_layer)
 
     def forward(self, src, tgt):
-        tgt = tgt + self.positional_encoding(tgt)
+        x = tgt + self.positional_encoding(tgt)
         for module in self.module_list:
-            pass
+            x = module(x, src, src)
+
+        return x
+            
 
 class Transformer(nn.Module):
     def __init__(self):
