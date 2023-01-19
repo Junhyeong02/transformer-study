@@ -51,7 +51,7 @@ class EncoderLayer(nn.Module):
         x = src + self.dropout(self.MHA(src, src, src))
         x = self.layernorm1(x)
 
-        x = x + self.FFN(x)
+        x = x + self.dropout(self.FFN(x))
         x = self.layernorm2(x)
 
         return x
@@ -75,7 +75,7 @@ class DecoderLayer(nn.Module):
         x = q + self.dropout(self.MHA(q, k, v))
         x = self.layernorm2(x)
 
-        x = x + self.FFN(x)
+        x = x + self.dropout(self.FFN(x))
         x = self.layernorm3(x)
 
         return x
