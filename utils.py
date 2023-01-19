@@ -9,7 +9,7 @@ def get_attn_decoder_mask(tensor):
 
 def get_dataset(dataset, split_ratio):
 
-    len_train_dataset = int(len(dataset)/ split_ratio)
+    len_train_dataset = int(len(dataset) * split_ratio)
     len_test_dataset = len(dataset) - len_train_dataset
     
     train_dataset, test_dataset =  random_split(dataset, [len_train_dataset, len_test_dataset])

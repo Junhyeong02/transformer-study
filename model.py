@@ -6,13 +6,18 @@ from transformer import TransformerEncoder
 class SimpleClassifier(nn.Module):
     def __init__(self, num_encoder_layer, max_len, embed_dim, num_heads, d_model, dim_ffn, output_dim):
         super(SimpleClassifier, self).__init__()
+        self.max_len = max_len
+        self.embed_dim = embed_dim
+        
         self.encoder = TransformerEncoder(num_encoder_layer, max_len, embed_dim, num_heads, d_model, dim_ffn)
-        self.linear1 = nn.Linear(embed_dim, embed_dim)
-        self.linear2 = nn.Linear(embed_dim, output_dim)
+        self.linear1 = nn.Linear(max_len * embed_dim, 64)
+        self.linear2 = nn.Linear(64, output_dim)
         self.relu = nn.ReLU()
 
     def forward(self, x):
         x = self.encoder(x)
+
+        x = x.view(-1, self.max_len * self.embed_dim)
 
         x = self.linear1(x)
         x = self.relu(x)
