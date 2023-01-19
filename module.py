@@ -45,11 +45,11 @@ class EncoderLayer(nn.Module):
         self.layernorm2 = nn.LayerNorm(embed_dim)
 
     def forward(self, src):
-        x = x + self.MHA(src, src, src)
-        x = self.layernorm(x)
+        x = src + self.MHA(src, src, src)
+        x = self.layernorm1(x)
 
         x = x + self.FFN(x)
-        x = self.layernorm(x)
+        x = self.layernorm2(x)
 
         return x
 

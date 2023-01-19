@@ -8,7 +8,7 @@ class TransformerEncoder(nn.Module):
         super(TransformerEncoder, self).__init__()
 
         self.positional_encoding = PositionalEncoding(embed_dim, max_len)
-        self.module_list = nn.ModuleList(EncoderLayer(embed_dim, num_heads, d_model, dim_ffn) for _ in num_encoder_layer)
+        self.module_list = nn.ModuleList(EncoderLayer(embed_dim, num_heads, d_model, dim_ffn) for _ in range(num_encoder_layer))
 
     def forward(self, src):
         x = src + self.positional_encoding(src)
